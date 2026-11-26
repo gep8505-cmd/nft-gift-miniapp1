@@ -1,170 +1,49 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>NFT Gift Scanner</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root{--bg:var(--tg-theme-bg-color,#10131b);--card:var(--tg-theme-secondary-bg-color,#1a2030);--text:var(--tg-theme-text-color,#f4f6fb);--muted:var(--tg-theme-hint-color,#9ba6bb);--accent:var(--tg-theme-button-color,#6d7cff);--line:rgba(150,165,195,.18)}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif}
-    .wrap{max-width:760px;margin:auto;padding:16px 14px 34px}
-    header{display:flex;align-items:center;justify-content:space-between;margin:4px 0 16px}
-    h1{font-size:22px;margin:0;font-weight:800;letter-spacing:-.5px}.sub{color:var(--muted);font-size:12px;margin-top:3px}
-    .pill{font-size:11px;color:#ffd98a;background:#7b541d33;border:1px solid #a879354f;border-radius:20px;padding:6px 9px}
-    .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
-    .tab{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:10px 3px;border-radius:12px;font-size:11px;font-weight:700}
-    .tab.active{background:var(--accent);border-color:var(--accent);color:white}
-    .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
-    .notice{font-size:12px;line-height:1.45;color:var(--muted)}
-    .notice strong{color:var(--text)}
-    .field{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;outline:none}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-    .label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
-    .selects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-    button{cursor:pointer}
-    .primary{background:var(--accent);color:white;border:0;border-radius:11px;padding:12px 14px;font-weight:700;width:100%;margin-top:10px}
-    .list{display:grid;gap:10px}
-    .item{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px}
-    .itemtop{display:flex;justify-content:space-between;gap:10px}
-    .name{font-weight:750;font-size:15px}.source{color:var(--muted);font-size:11px;margin-top:3px}
-    .price{font-weight:800;white-space:nowrap}
-    .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-    .tag{font-size:11px;padding:5px 8px;border-radius:20px;background:rgba(120,140,180,.13);color:var(--muted)}
-    .actions{display:flex;gap:8px;margin-top:11px}
-    .small{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:10px;padding:9px 11px;font-size:12px}
-    .small:disabled{opacity:.45;cursor:not-allowed}
-    .heart{margin-left:auto;font-size:18px}
-    .empty{text-align:center;padding:28px 12px;color:var(--muted);line-height:1.5}
-    .section-title{font-weight:800;margin:2px 0 12px}
-    .sourcegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .sourcebox{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;background:var(--bg)}
-    .sourcebox b{display:block;margin-bottom:3px}.status{font-size:11px;color:var(--muted)}
-    .hidden{display:none!important}
-    footer{text-align:center;color:var(--muted);font-size:11px;margin-top:18px}
-    @media(min-width:600px){.tabs{gap:9px}.tab{font-size:13px;padding:12px}}
-  </style>
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <div><h1>🎁 NFT Gift Scanner</h1><div class="sub">Поиск и отслеживание подарков</div></div>
-    <div class="pill">MVP · DEMO</div>
-  </header>
-
-  <nav class="tabs">
-    <button class="tab active" data-tab="catalog">Каталог</button>
-    <button class="tab" data-tab="search">Поиск</button>
-    <button class="tab" data-tab="price">Цена</button>
-    <button class="tab" data-tab="favorites">Избранное</button>
-    <button class="tab" data-tab="sources">Источники</button>
-  </nav>
-
-  <section id="catalog" class="view">
-    <div class="panel">
-      <div class="notice"><strong>Важно:</strong> сейчас это рабочий макет Mini App. Карточки ниже демонстрационные, не реальные объявления. Живые цены и продавцы появятся после подключения API/источников.</div>
-    </div>
-    <div class="list" id="catalogList"></div>
-  </section>
-
-  <section id="search" class="view hidden">
-    <div class="panel">
-      <div class="section-title">🔎 Поиск по модели</div>
-      <label class="label" for="searchInput">Название подарка или модели</label>
-      <input id="searchInput" class="field" placeholder="Например: Plush Pepe">
-      <button class="primary" id="searchBtn">Найти</button>
-    </div>
-    <div class="list" id="searchList"></div>
-  </section>
-
-  <section id="price" class="view hidden">
-    <div class="panel">
-      <div class="section-title">💰 Фильтр цены</div>
-      <div class="row">
-        <div><label class="label" for="minPrice">Цена от, TON</label><input id="minPrice" class="field" type="number" min="0" step="0.01" placeholder="0"></div>
-        <div><label class="label" for="maxPrice">Цена до, TON</label><input id="maxPrice" class="field" type="number" min="0" step="0.01" placeholder="Без лимита"></div>
-      </div>
-      <div class="selects">
-        <div><label class="label" for="priceSource">Площадка</label><select id="priceSource" class="field"><option value="all">Все</option><option>Telegram</option><option>Fragment</option><option>Portals</option><option>MRKT</option><option>Tonnel</option><option>Getgems</option></select></div>
-        <div><label class="label" for="sort">Сортировка</label><select id="sort" class="field"><option value="asc">Сначала дешевле</option><option value="desc">Сначала дороже</option></select></div>
-      </div>
-      <button class="primary" id="filterBtn">Применить фильтр</button>
-    </div>
-    <div class="list" id="priceList"></div>
-  </section>
-
-  <section id="favorites" class="view hidden">
-    <div class="panel"><div class="section-title">⭐ Избранное</div><div class="notice">Нажимай ☆ на карточке, чтобы сохранить её на этом устройстве.</div></div>
-    <div class="list" id="favoritesList"></div>
-  </section>
-
-  <section id="sources" class="view hidden">
-    <div class="panel">
-      <div class="section-title">🌐 Источники данных</div>
-      <div class="notice">Эти площадки предусмотрены для подключения. Статус «не подключено» означает, что приложение пока не получает оттуда живые объявления.</div>
-    </div>
-    <div class="sourcegrid" id="sourceGrid"></div>
-  </section>
-  <footer>Демо-интерфейс · Не является торговой площадкой</footer>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>NFT Gift Scanner</title><script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:var(--tg-theme-bg-color,#10131b);--card:var(--tg-theme-secondary-bg-color,#1a2030);--txt:var(--tg-theme-text-color,#f4f6fb);--muted:var(--tg-theme-hint-color,#9ba6bb);--accent:var(--tg-theme-button-color,#6d7cff);--line:rgba(150,165,195,.2)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px system-ui,sans-serif}.wrap{max-width:760px;margin:auto;padding:16px 14px 32px}
+header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 16px}h1{font-size:22px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}.live{font-size:11px;color:#8de0ae;border:1px solid #398c5a66;background:#1d6b3b22;padding:6px 9px;border-radius:20px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:13px}.tab{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:11px;padding:10px 4px;font-weight:700;font-size:12px}.tab.active{background:var(--accent);color:white}
+.panel,.item{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px;margin-bottom:10px}.notice{font-size:12px;line-height:1.5;color:var(--muted)}.notice b{color:var(--txt)}
+.field{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}.primary{width:100%;background:var(--accent);color:#fff;border:0;border-radius:11px;padding:12px;font-weight:750;margin-top:9px}
+.list{display:grid;gap:9px}.item{margin:0}.top{display:flex;justify-content:space-between;gap:10px}.name{font-weight:800}.muted{font-size:11px;color:var(--muted);margin-top:4px}.price{font-weight:800;white-space:nowrap}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.chip{font-size:11px;color:var(--muted);background:#8292b51c;border-radius:20px;padding:5px 8px}.actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}.small{font-size:12px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--txt);text-decoration:none}.empty{text-align:center;color:var(--muted);padding:25px 10px;background:var(--card);border-radius:14px}.title{font-weight:800;margin:0 0 10px}.hidden{display:none!important}.back{margin-bottom:10px}.source{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px}.source b{display:block}.source small{color:var(--muted)}footer{text-align:center;color:var(--muted);font-size:11px;margin-top:16px}a{color:var(--accent)}
+</style></head>
+<body><div class="wrap">
+<header><div><h1>🎁 NFT Gift Scanner</h1><div class="sub">Реальные цены и сравнение площадок</div></div><span class="live">● LIVE DATA</span></header>
+<nav class="tabs"><button class="tab active" data-tab="catalog">Каталог</button><button class="tab" data-tab="search">Поиск</button><button class="tab" data-tab="price">Фильтр</button><button class="tab" data-tab="favorites">Избранное</button></nav>
+<section id="catalog" class="view"><div class="panel notice"><b>Данные подключены:</b> Telegram Market, Fragment и Portals через публичный API StarPrice. Цены обновляются примерно каждые 30 минут. Это цены предложений, не гарантированные цены продажи. <span id="updated"></span></div><div id="catalogList" class="list"><div class="empty">Загружаю каталог…</div></div></section>
+<section id="search" class="view hidden"><div class="panel"><div class="title">🔎 Поиск подарка или модели</div><input id="q" class="field" placeholder="Например: Plush Pepe"><button id="searchBtn" class="primary">Найти</button><div class="muted">Сначала найди коллекцию, затем открой её, чтобы увидеть модели.</div></div><div id="searchList" class="list"></div></section>
+<section id="price" class="view hidden"><div class="panel"><div class="title">💰 Фильтр минимальной цены</div><div class="row"><div><label class="label">От, GRAM</label><input id="min" class="field" type="number" min="0" placeholder="0"></div><div><label class="label">До, GRAM</label><input id="max" class="field" type="number" min="0" placeholder="Без лимита"></div></div><button id="filterBtn" class="primary">Применить</button></div><div id="priceList" class="list"></div></section>
+<section id="favorites" class="view hidden"><div class="panel"><div class="title">⭐ Избранное</div><div class="notice">Сохраняются коллекции на этом устройстве.</div></div><div id="favList" class="list"></div></section>
+<section id="detail" class="view hidden"><button id="back" class="small back">← Назад</button><div id="detailContent"></div></section>
+<footer>Цены: <a href="https://starprice.net/gifts" target="_blank" rel="noopener">StarPrice</a> · Не является финансовой рекомендацией</footer>
 </div>
-
 <script>
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
-const demo = [
- {id:"d1",name:"Пример: Plush Pepe",model:"Plush Pepe",price:12.5,source:"Telegram",kind:"ДЕМО"},
- {id:"d2",name:"Пример: Heart Locket",model:"Heart Locket",price:18,source:"Fragment",kind:"ДЕМО"},
- {id:"d3",name:"Пример: Signet Ring",model:"Signet Ring",price:7.8,source:"Portals",kind:"ДЕМО"},
- {id:"d4",name:"Пример: Sakura Flower",model:"Sakura Flower",price:24,source:"MRKT",kind:"ДЕМО"},
- {id:"d5",name:"Пример: Vintage Cigar",model:"Vintage Cigar",price:9.4,source:"Tonnel",kind:"ДЕМО"},
- {id:"d6",name:"Пример: Magic Potion",model:"Magic Potion",price:15.2,source:"Getgems",kind:"ДЕМО"}
-];
-const sources=["Telegram","Fragment","Portals","MRKT","Tonnel","Getgems"];
-const favorites = new Set(JSON.parse(localStorage.getItem("nft_favs")||"[]"));
-const $ = id => document.getElementById(id);
-function saveFavs(){localStorage.setItem("nft_favs",JSON.stringify([...favorites]));}
-function card(x){
- const fav=favorites.has(x.id);
- return `<article class="item"><div class="itemtop"><div><div class="name">${x.name}</div><div class="source">${x.source} · ${x.kind}</div></div><div class="price">${x.price.toFixed(2)} TON</div></div><div class="meta"><span class="tag">Демонстрационное объявление</span><span class="tag">${x.model}</span></div><div class="actions"><button class="small" disabled>Ссылка продавца появится после подключения данных</button><button class="small heart" data-fav="${x.id}" aria-label="Избранное">${fav?"★":"☆"}</button></div></article>`;
-}
-function render(target,items,emptyText="Ничего не найдено"){
- $(target).innerHTML=items.length?items.map(card).join(""):`<div class="panel empty">${emptyText}</div>`;
-}
-function bindFavs(){
- document.querySelectorAll("[data-fav]").forEach(b=>b.addEventListener("click",()=>{
-  const id=b.dataset.fav; favorites.has(id)?favorites.delete(id):favorites.add(id); saveFavs(); refresh();
- }));
-}
-function refresh(){
- render("catalogList",demo);
- render("searchList",demo);
- render("priceList",demo);
- render("favoritesList",demo.filter(x=>favorites.has(x.id)),"Пока здесь пусто. Добавь подарки в избранное через ☆.");
- bindFavs();
-}
-function tab(name){
- document.querySelectorAll(".view").forEach(v=>v.classList.toggle("hidden",v.id!==name));
- document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));
- if(name==="favorites") render("favoritesList",demo.filter(x=>favorites.has(x.id)),"Пока здесь пусто. Добавь подарки в избранное через ☆.");
-}
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
-$("searchBtn").addEventListener("click",()=>{
- const q=$("searchInput").value.trim().toLowerCase();
- render("searchList",demo.filter(x=>x.model.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)),"По этому запросу ничего нет.");
- bindFavs();
-});
-$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("searchBtn").click();});
-$("filterBtn").addEventListener("click",()=>{
- const min=$("minPrice").value===""?0:Number($("minPrice").value);
- const max=$("maxPrice").value===""?Infinity:Number($("maxPrice").value);
- const src=$("priceSource").value, sort=$("sort").value;
- let items=demo.filter(x=>x.price>=min&&x.price<=max&&(src==="all"||x.source===src));
- items.sort((a,b)=>sort==="asc"?a.price-b.price:b.price-a.price);
- render("priceList",items,"Нет демонстрационных карточек в этом диапазоне.");
- bindFavs();
-});
-$("sourceGrid").innerHTML=sources.map(s=>`<div class="sourcebox"><b>${s}</b><span class="status">Не подключено · ожидает интеграции</span></div>`).join("");
-refresh();
-</script>
-</body>
-</html>
+const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand()}
+const API='https://starprice.net/api/v1/gifts';
+let gifts=[],currentTab='catalog',currentGift=null;
+const fav=new Set(JSON.parse(localStorage.getItem('nft_live_favs')||'[]'));
+const $=id=>document.getElementById(id);
+function fmt(n){return n==null?'—':Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2})}
+function floorText(g){const f=g.floor;if(!f)return 'Нет цены';return `${fmt(f.price)} ${f.currency||'GRAM'}`}
+function offersHtml(offers){if(!offers||!offers.length)return '<div class="muted">Нет активных предложений в источниках</div>';return offers.map(o=>`<div class="item"><div class="top"><div><b>${esc(o.market||'Площадка')}</b><div class="muted">${o.lots==null?'Количество лотов неизвестно':o.lots+' лотов'} · ${o.updated_at?new Date(o.updated_at).toLocaleString('ru-RU'):''}</div></div><div class="price">${fmt(o.price)} ${esc(o.currency||'')}</div></div>${o.url?`<div class="actions"><a class="small" href="${esc(o.url)}" target="_blank" rel="noopener">Открыть лоты ↗</a></div>`:''}</div>`).join('')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function card(g){let slug=g.slug||g.id||g.name;return `<article class="item"><div class="top"><div><div class="name">${esc(g.name||slug)}</div><div class="muted">${g.models_count??'—'} моделей · ${g.updated_at?'обновлено '+new Date(g.updated_at).toLocaleString('ru-RU'):''}</div></div><div class="price">${floorText(g)}</div></div><div class="chips">${(g.offers||[]).map(o=>`<span class="chip">${esc(o.market)}: ${fmt(o.price)} ${esc(o.currency||'')}</span>`).join('')}</div><div class="actions"><button class="small" data-open="${esc(slug)}">Модели и цены</button><button class="small" data-fav="${esc(slug)}">${fav.has(slug)?'★ В избранном':'☆ В избранное'}</button></div></article>`}
+function render(id,arr,empty){$(id).innerHTML=arr.length?arr.map(card).join(''):`<div class="empty">${empty}</div>`;bind()}
+function bind(){document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openGift(b.dataset.open));document.querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let s=b.dataset.fav;fav.has(s)?fav.delete(s):fav.add(s);localStorage.setItem('nft_live_favs',JSON.stringify([...fav]));refresh();})}
+function refresh(){render('catalogList',gifts,'Каталог пуст');render('favList',gifts.filter(g=>fav.has(g.slug||g.id||g.name)),'Пока нет избранного');}
+async function load(){try{let r=await fetch(API,{headers:{'Accept':'application/json'}});if(!r.ok)throw Error('API ответил '+r.status);let j=await r.json();gifts=Array.isArray(j)?j:(j.gifts||j.results||j.collections||j.data||[]);if(!Array.isArray(gifts))throw Error('Неожиданный формат каталога');gifts.sort((a,b)=>(a.floor?.price??Infinity)-(b.floor?.price??Infinity));$('updated').textContent=' Каталог загружен '+new Date().toLocaleTimeString('ru-RU');refresh();applyFilter()}catch(e){$('catalogList').innerHTML=`<div class="empty">Не удалось загрузить каталог: ${esc(e.message)}. Обнови страницу чуть позже.</div>`}}
+async function openGift(slug){currentGift=slug;$('detail').classList.remove('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));$('detailContent').innerHTML='<div class="empty">Загружаю модели…</div>';try{let r=await fetch(API+'/'+encodeURIComponent(slug));if(!r.ok)throw Error('Ошибка '+r.status);let j=await r.json();let g=j.gift||j;let models=j.models||g.models||[];$('detailContent').innerHTML=`<div class="panel"><div class="title">${esc(g.name||slug)}</div><div class="notice">Минимальная цена коллекции: <b>${floorText(g)}</b></div>${offersHtml(g.offers)}</div><div class="panel"><div class="title">Модели (${models.length})</div><input id="modelQ" class="field" placeholder="Фильтр моделей"><div id="modelsList" class="list" style="margin-top:10px"></div></div>`;function drawModels(q=''){let arr=models.filter(m=>(m.name||'').toLowerCase().includes(q.toLowerCase()));$('modelsList').innerHTML=arr.length?arr.map(m=>`<div class="item"><div class="top"><div><b>${esc(m.name)}</b><div class="muted">${m.rarity_pct!=null?'Редкость '+m.rarity_pct+'%':''}</div></div><div class="price">${floorText(m)}</div></div>${offersHtml(m.offers)}</div>`).join(''):'<div class="empty">Модели не найдены</div>'}$('modelQ').oninput=e=>drawModels(e.target.value);drawModels()}catch(e){$('detailContent').innerHTML=`<div class="empty">Не получилось открыть коллекцию: ${esc(e.message)}</div>`}}
+function applyFilter(){let min=Number($('min').value||0),max=$('max').value===''?Infinity:Number($('max').value);let a=gifts.filter(g=>g.floor&&g.floor.currency==='GRAM'&&g.floor.price>=min&&g.floor.price<=max);render('priceList',a,'Нет коллекций в этом диапазоне (фильтр по GRAM).')}
+function tab(name){currentTab=name;$('detail').classList.add('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='favorites')render('favList',gifts.filter(g=>fav.has(g.slug||g.id||g.name)),'Пока нет избранного')}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+$('searchBtn').onclick=()=>{let q=$('q').value.toLowerCase().trim();render('searchList',gifts.filter(g=>(g.name||'').toLowerCase().includes(q)|| (g.slug||'').toLowerCase().includes(q)),'Ничего не найдено')};
+$('q').onkeydown=e=>{if(e.key==='Enter')$('searchBtn').click()};
+$('filterBtn').onclick=applyFilter;
+$('back').onclick=()=>tab(currentTab==='detail'?'catalog':currentTab);
+load();
+</script></body></html>

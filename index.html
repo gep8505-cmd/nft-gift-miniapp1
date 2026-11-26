@@ -1,49 +1,83 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>NFT Gift Scanner</title><script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#10121c">
+<title>NFT Gift Scanner</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:var(--tg-theme-bg-color,#10131b);--card:var(--tg-theme-secondary-bg-color,#1a2030);--txt:var(--tg-theme-text-color,#f4f6fb);--muted:var(--tg-theme-hint-color,#9ba6bb);--accent:var(--tg-theme-button-color,#6d7cff);--line:rgba(150,165,195,.2)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px system-ui,sans-serif}.wrap{max-width:760px;margin:auto;padding:16px 14px 32px}
-header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 16px}h1{font-size:22px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}.live{font-size:11px;color:#8de0ae;border:1px solid #398c5a66;background:#1d6b3b22;padding:6px 9px;border-radius:20px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:13px}.tab{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:11px;padding:10px 4px;font-weight:700;font-size:12px}.tab.active{background:var(--accent);color:white}
-.panel,.item{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px;margin-bottom:10px}.notice{font-size:12px;line-height:1.5;color:var(--muted)}.notice b{color:var(--txt)}
-.field{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}.primary{width:100%;background:var(--accent);color:#fff;border:0;border-radius:11px;padding:12px;font-weight:750;margin-top:9px}
-.list{display:grid;gap:9px}.item{margin:0}.top{display:flex;justify-content:space-between;gap:10px}.name{font-weight:800}.muted{font-size:11px;color:var(--muted);margin-top:4px}.price{font-weight:800;white-space:nowrap}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.chip{font-size:11px;color:var(--muted);background:#8292b51c;border-radius:20px;padding:5px 8px}.actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}.small{font-size:12px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--txt);text-decoration:none}.empty{text-align:center;color:var(--muted);padding:25px 10px;background:var(--card);border-radius:14px}.title{font-weight:800;margin:0 0 10px}.hidden{display:none!important}.back{margin-bottom:10px}.source{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px}.source b{display:block}.source small{color:var(--muted)}footer{text-align:center;color:var(--muted);font-size:11px;margin-top:16px}a{color:var(--accent)}
-</style></head>
+:root{
+ --bg:var(--tg-theme-bg-color,#10121c);--card:var(--tg-theme-secondary-bg-color,#1b1e2c);
+ --txt:var(--tg-theme-text-color,#f5f6ff);--muted:var(--tg-theme-hint-color,#9ca4ba);
+ --accent:var(--tg-theme-button-color,#8875ff);--line:rgba(160,170,210,.16);
+ --good:#79e0b0;--shadow:0 12px 32px rgba(0,0,0,.18)
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% -10%,rgba(133,103,255,.22),transparent 38%),var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:18px 14px 34px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0 18px}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;font-size:25px;background:linear-gradient(145deg,#a38bff,#5b49d8);box-shadow:0 8px 22px #7761ff55}
+h1{font-size:20px;line-height:1.15;margin:0;font-weight:850;letter-spacing:-.4px}.sub{font-size:11px;color:var(--muted);margin-top:4px}
+.live{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--good);border:1px solid #79e0b044;background:#79e0b012;padding:7px 9px;border-radius:30px;white-space:nowrap}
+.hero{padding:17px;border-radius:20px;background:linear-gradient(125deg,#5c4bc4,#302a65 65%,#25213f);box-shadow:var(--shadow);margin-bottom:15px;position:relative;overflow:hidden}
+.hero:after{content:"🎁";position:absolute;right:15px;top:5px;font-size:76px;opacity:.13;transform:rotate(13deg)}
+.hero b{font-size:17px;display:block;max-width:75%}.hero span{font-size:12px;opacity:.8;display:block;margin-top:5px;max-width:75%}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:13px;padding:10px 3px;font-weight:750;font-size:11px}
+.tab.active{background:var(--accent);color:white;border-color:transparent;box-shadow:0 5px 15px #8875ff44}
+.panel,.item{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:14px;margin-bottom:11px;box-shadow:var(--shadow)}
+.notice{font-size:11px;color:var(--muted);line-height:1.5}.notice b{color:var(--txt)}
+.title{font-size:15px;font-weight:850;margin:0 0 10px}.field{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;outline:none}
+.field:focus{border-color:var(--accent)}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.label{font-size:11px;color:var(--muted);display:block;margin:0 0 5px}
+.primary{width:100%;background:linear-gradient(110deg,var(--accent),#6554d8);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:850;margin-top:10px}
+.list{display:grid;gap:10px}.item{margin:0;padding:11px;overflow:hidden}
+.gift{display:grid;grid-template-columns:86px minmax(0,1fr);gap:12px;align-items:center}
+.thumb{width:86px;height:86px;border-radius:14px;overflow:hidden;background:linear-gradient(145deg,#3b315f,#22283e);display:grid;place-items:center;flex-shrink:0}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}.placeholder{font-size:38px;filter:drop-shadow(0 6px 10px #0005)}
+.name{font-size:14px;font-weight:850;line-height:1.25;overflow-wrap:anywhere}.muted{font-size:11px;color:var(--muted);margin-top:4px}
+.price{font-size:14px;font-weight:900;white-space:nowrap;color:var(--good);margin-top:7px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.chip{font-size:10px;color:var(--muted);background:#8792b51c;border:1px solid var(--line);border-radius:30px;padding:4px 7px}
+.actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}.small{font-size:11px;font-weight:750;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--txt);text-decoration:none}
+.empty{text-align:center;color:var(--muted);padding:25px 12px;background:var(--card);border:1px dashed var(--line);border-radius:15px;font-size:12px}
+.hidden{display:none!important}.back{margin-bottom:10px}.source{border:1px solid var(--line);background:var(--card);border-radius:13px;padding:12px}.source b{display:block}.source small{color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:10px;margin-top:18px}a{color:var(--accent)}
+@media(min-width:560px){.list#catalogList,.list#searchList,.list#priceList,.list#favList{grid-template-columns:1fr 1fr}.item{align-self:start}}
+</style>
+</head>
 <body><div class="wrap">
-<header><div><h1>🎁 NFT Gift Scanner</h1><div class="sub">Реальные цены и сравнение площадок</div></div><span class="live">● LIVE DATA</span></header>
-<nav class="tabs"><button class="tab active" data-tab="catalog">Каталог</button><button class="tab" data-tab="search">Поиск</button><button class="tab" data-tab="price">Фильтр</button><button class="tab" data-tab="favorites">Избранное</button></nav>
-<section id="catalog" class="view"><div class="panel notice"><b>Данные подключены:</b> Telegram Market, Fragment и Portals через публичный API StarPrice. Цены обновляются примерно каждые 30 минут. Это цены предложений, не гарантированные цены продажи. <span id="updated"></span></div><div id="catalogList" class="list"><div class="empty">Загружаю каталог…</div></div></section>
-<section id="search" class="view hidden"><div class="panel"><div class="title">🔎 Поиск подарка или модели</div><input id="q" class="field" placeholder="Например: Plush Pepe"><button id="searchBtn" class="primary">Найти</button><div class="muted">Сначала найди коллекцию, затем открой её, чтобы увидеть модели.</div></div><div id="searchList" class="list"></div></section>
-<section id="price" class="view hidden"><div class="panel"><div class="title">💰 Фильтр минимальной цены</div><div class="row"><div><label class="label">От, GRAM</label><input id="min" class="field" type="number" min="0" placeholder="0"></div><div><label class="label">До, GRAM</label><input id="max" class="field" type="number" min="0" placeholder="Без лимита"></div></div><button id="filterBtn" class="primary">Применить</button></div><div id="priceList" class="list"></div></section>
-<section id="favorites" class="view hidden"><div class="panel"><div class="title">⭐ Избранное</div><div class="notice">Сохраняются коллекции на этом устройстве.</div></div><div id="favList" class="list"></div></section>
+<header><div class="brand"><div class="logo">🎁</div><div><h1>NFT Gift Scanner</h1><div class="sub">Каталог · модели · цены</div></div></div><span class="live">● LIVE</span></header>
+<div class="hero"><b>Находи редкие подарки выгоднее</b><span>Сравнивай коллекции, смотри модели и сохраняй понравившееся</span></div>
+<nav class="tabs"><button class="tab active" data-tab="catalog">🎁 Каталог</button><button class="tab" data-tab="search">⌕ Поиск</button><button class="tab" data-tab="price">↕ Цена</button><button class="tab" data-tab="favorites">★ Избранное</button></nav>
+<section id="catalog" class="view"><div class="panel notice"><b>Каталог:</b> данные запрашиваются из подключённого источника. Фото показываются, если источник передаёт изображение коллекции. <span id="updated"></span></div><div id="catalogList" class="list"><div class="empty">Загружаю каталог…</div></div></section>
+<section id="search" class="view hidden"><div class="panel"><div class="title">🔎 Найти подарок</div><input id="q" class="field" placeholder="Название или модель"><button id="searchBtn" class="primary">Найти</button></div><div id="searchList" class="list"></div></section>
+<section id="price" class="view hidden"><div class="panel"><div class="title">💰 Фильтр цены</div><div class="row"><div><label class="label">От, GRAM</label><input id="min" class="field" type="number" min="0" placeholder="0"></div><div><label class="label">До, GRAM</label><input id="max" class="field" type="number" min="0" placeholder="Без лимита"></div></div><button id="filterBtn" class="primary">Показать подарки</button></div><div id="priceList" class="list"></div></section>
+<section id="favorites" class="view hidden"><div class="panel"><div class="title">⭐ Избранное</div><div class="notice">Сохранённые коллекции останутся на этом устройстве.</div></div><div id="favList" class="list"></div></section>
 <section id="detail" class="view hidden"><button id="back" class="small back">← Назад</button><div id="detailContent"></div></section>
-<footer>Цены: <a href="https://starprice.net/gifts" target="_blank" rel="noopener">StarPrice</a> · Не является финансовой рекомендацией</footer>
+<footer>Источник цен: <a href="https://starprice.net/gifts" target="_blank" rel="noopener">StarPrice</a> · Цены предложений могут меняться</footer>
 </div>
 <script>
 const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand()}
 const API='https://starprice.net/api/v1/gifts';
-let gifts=[],currentTab='catalog',currentGift=null;
+let gifts=[],currentTab='catalog';
 const fav=new Set(JSON.parse(localStorage.getItem('nft_live_favs')||'[]'));
 const $=id=>document.getElementById(id);
 function fmt(n){return n==null?'—':Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2})}
-function floorText(g){const f=g.floor;if(!f)return 'Нет цены';return `${fmt(f.price)} ${f.currency||'GRAM'}`}
-function offersHtml(offers){if(!offers||!offers.length)return '<div class="muted">Нет активных предложений в источниках</div>';return offers.map(o=>`<div class="item"><div class="top"><div><b>${esc(o.market||'Площадка')}</b><div class="muted">${o.lots==null?'Количество лотов неизвестно':o.lots+' лотов'} · ${o.updated_at?new Date(o.updated_at).toLocaleString('ru-RU'):''}</div></div><div class="price">${fmt(o.price)} ${esc(o.currency||'')}</div></div>${o.url?`<div class="actions"><a class="small" href="${esc(o.url)}" target="_blank" rel="noopener">Открыть лоты ↗</a></div>`:''}</div>`).join('')}
+function floorText(g){const f=g?.floor;if(!f)return 'Цена не указана';return `${fmt(f.price)} ${f.currency||'GRAM'}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function card(g){let slug=g.slug||g.id||g.name;return `<article class="item"><div class="top"><div><div class="name">${esc(g.name||slug)}</div><div class="muted">${g.models_count??'—'} моделей · ${g.updated_at?'обновлено '+new Date(g.updated_at).toLocaleString('ru-RU'):''}</div></div><div class="price">${floorText(g)}</div></div><div class="chips">${(g.offers||[]).map(o=>`<span class="chip">${esc(o.market)}: ${fmt(o.price)} ${esc(o.currency||'')}</span>`).join('')}</div><div class="actions"><button class="small" data-open="${esc(slug)}">Модели и цены</button><button class="small" data-fav="${esc(slug)}">${fav.has(slug)?'★ В избранном':'☆ В избранное'}</button></div></article>`}
+function imageOf(g){return g?.image_url||g?.image||g?.photo_url||g?.photo||g?.thumbnail||g?.cover||g?.preview||g?.picture||g?.icon||''}
+function imageHtml(g){const src=imageOf(g);return src?`<div class="thumb"><img src="${esc(src)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<span class=placeholder>🎁</span>'"></div>`:`<div class="thumb"><span class="placeholder">🎁</span></div>`}
+function card(g){let slug=g.slug||g.id||g.name;return `<article class="item"><div class="gift">${imageHtml(g)}<div><div class="name">${esc(g.name||slug||'Подарок')}</div><div class="muted">${g.models_count??'—'} моделей</div><div class="price">${floorText(g)}</div></div></div><div class="chips">${(g.offers||[]).slice(0,3).map(o=>`<span class="chip">${esc(o.market||'Площадка')}: ${fmt(o.price)} ${esc(o.currency||'')}</span>`).join('')}</div><div class="actions"><button class="small" data-open="${esc(slug)}">Модели и цены</button><button class="small" data-fav="${esc(slug)}">${fav.has(String(slug))?'★ В избранном':'☆ В избранное'}</button></div></article>`}
+function bind(){document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openGift(b.dataset.open));document.querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let s=b.dataset.fav;fav.has(s)?fav.delete(s):fav.add(s);localStorage.setItem('nft_live_favs',JSON.stringify([...fav]));refresh()})}
 function render(id,arr,empty){$(id).innerHTML=arr.length?arr.map(card).join(''):`<div class="empty">${empty}</div>`;bind()}
-function bind(){document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openGift(b.dataset.open));document.querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let s=b.dataset.fav;fav.has(s)?fav.delete(s):fav.add(s);localStorage.setItem('nft_live_favs',JSON.stringify([...fav]));refresh();})}
-function refresh(){render('catalogList',gifts,'Каталог пуст');render('favList',gifts.filter(g=>fav.has(g.slug||g.id||g.name)),'Пока нет избранного');}
-async function load(){try{let r=await fetch(API,{headers:{'Accept':'application/json'}});if(!r.ok)throw Error('API ответил '+r.status);let j=await r.json();gifts=Array.isArray(j)?j:(j.gifts||j.results||j.collections||j.data||[]);if(!Array.isArray(gifts))throw Error('Неожиданный формат каталога');gifts.sort((a,b)=>(a.floor?.price??Infinity)-(b.floor?.price??Infinity));$('updated').textContent=' Каталог загружен '+new Date().toLocaleTimeString('ru-RU');refresh();applyFilter()}catch(e){$('catalogList').innerHTML=`<div class="empty">Не удалось загрузить каталог: ${esc(e.message)}. Обнови страницу чуть позже.</div>`}}
-async function openGift(slug){currentGift=slug;$('detail').classList.remove('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));$('detailContent').innerHTML='<div class="empty">Загружаю модели…</div>';try{let r=await fetch(API+'/'+encodeURIComponent(slug));if(!r.ok)throw Error('Ошибка '+r.status);let j=await r.json();let g=j.gift||j;let models=j.models||g.models||[];$('detailContent').innerHTML=`<div class="panel"><div class="title">${esc(g.name||slug)}</div><div class="notice">Минимальная цена коллекции: <b>${floorText(g)}</b></div>${offersHtml(g.offers)}</div><div class="panel"><div class="title">Модели (${models.length})</div><input id="modelQ" class="field" placeholder="Фильтр моделей"><div id="modelsList" class="list" style="margin-top:10px"></div></div>`;function drawModels(q=''){let arr=models.filter(m=>(m.name||'').toLowerCase().includes(q.toLowerCase()));$('modelsList').innerHTML=arr.length?arr.map(m=>`<div class="item"><div class="top"><div><b>${esc(m.name)}</b><div class="muted">${m.rarity_pct!=null?'Редкость '+m.rarity_pct+'%':''}</div></div><div class="price">${floorText(m)}</div></div>${offersHtml(m.offers)}</div>`).join(''):'<div class="empty">Модели не найдены</div>'}$('modelQ').oninput=e=>drawModels(e.target.value);drawModels()}catch(e){$('detailContent').innerHTML=`<div class="empty">Не получилось открыть коллекцию: ${esc(e.message)}</div>`}}
-function applyFilter(){let min=Number($('min').value||0),max=$('max').value===''?Infinity:Number($('max').value);let a=gifts.filter(g=>g.floor&&g.floor.currency==='GRAM'&&g.floor.price>=min&&g.floor.price<=max);render('priceList',a,'Нет коллекций в этом диапазоне (фильтр по GRAM).')}
-function tab(name){currentTab=name;$('detail').classList.add('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='favorites')render('favList',gifts.filter(g=>fav.has(g.slug||g.id||g.name)),'Пока нет избранного')}
+function refresh(){render('catalogList',gifts,'Каталог пока пуст');render('favList',gifts.filter(g=>fav.has(String(g.slug||g.id||g.name))),'Пока ничего не добавлено')}
+async function load(){try{let r=await fetch(API,{headers:{'Accept':'application/json'}});if(!r.ok)throw Error('API ответил '+r.status);let j=await r.json();gifts=Array.isArray(j)?j:(j.gifts||j.results||j.collections||j.data||[]);if(!Array.isArray(gifts))throw Error('Неожиданный формат каталога');gifts.sort((a,b)=>(a.floor?.price??Infinity)-(b.floor?.price??Infinity));$('updated').textContent=' · обновлено '+new Date().toLocaleTimeString('ru-RU');refresh();applyFilter()}catch(e){$('catalogList').innerHTML=`<div class="empty">Не удалось загрузить каталог: ${esc(e.message)}. Попробуй обновить страницу позже.</div>`}}
+async function openGift(slug){currentTab='catalog';$('detail').classList.remove('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));$('detailContent').innerHTML='<div class="empty">Загружаю модели…</div>';try{let r=await fetch(API+'/'+encodeURIComponent(slug));if(!r.ok)throw Error('Ошибка '+r.status);let j=await r.json(),g=j.gift||j,models=j.models||g.models||[];$('detailContent').innerHTML=`<div class="panel"><div class="gift">${imageHtml(g)}<div><div class="name">${esc(g.name||slug)}</div><div class="price">${floorText(g)}</div></div></div></div><div class="panel"><div class="title">Модели (${models.length})</div><input id="modelQ" class="field" placeholder="Фильтр моделей"><div id="modelsList" class="list" style="margin-top:10px"></div></div>`;function drawModels(q=''){let arr=models.filter(m=>(m.name||'').toLowerCase().includes(q.toLowerCase()));$('modelsList').innerHTML=arr.length?arr.map(m=>`<article class="item"><div class="gift">${imageHtml(m)}<div><b>${esc(m.name||'Модель')}</b><div class="muted">${m.rarity_pct!=null?'Редкость '+m.rarity_pct+'%':''}</div><div class="price">${floorText(m)}</div></div></div></article>`).join(''):'<div class="empty">Модели не найдены</div>'}$('modelQ').oninput=e=>drawModels(e.target.value);drawModels()}catch(e){$('detailContent').innerHTML=`<div class="empty">Не получилось открыть коллекцию: ${esc(e.message)}</div>`}}
+function applyFilter(){let min=Number($('min').value||0),max=$('max').value===''?Infinity:Number($('max').value);let a=gifts.filter(g=>g.floor&&g.floor.currency==='GRAM'&&g.floor.price>=min&&g.floor.price<=max);render('priceList',a,'Нет коллекций в этом диапазоне.')}
+function tab(name){currentTab=name;$('detail').classList.add('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='favorites')render('favList',gifts.filter(g=>fav.has(String(g.slug||g.id||g.name))),'Пока ничего не добавлено')}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-$('searchBtn').onclick=()=>{let q=$('q').value.toLowerCase().trim();render('searchList',gifts.filter(g=>(g.name||'').toLowerCase().includes(q)|| (g.slug||'').toLowerCase().includes(q)),'Ничего не найдено')};
+$('searchBtn').onclick=()=>{let q=$('q').value.toLowerCase().trim();render('searchList',gifts.filter(g=>(g.name||'').toLowerCase().includes(q)||(g.slug||'').toLowerCase().includes(q)),'Ничего не найдено')};
 $('q').onkeydown=e=>{if(e.key==='Enter')$('searchBtn').click()};
-$('filterBtn').onclick=applyFilter;
-$('back').onclick=()=>tab(currentTab==='detail'?'catalog':currentTab);
+$('filterBtn').onclick=applyFilter;$('back').onclick=()=>tab(currentTab);
 load();
 </script></body></html>

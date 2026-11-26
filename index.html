@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>NFT Gift Scanner</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root{--bg:var(--tg-theme-bg-color,#10131b);--card:var(--tg-theme-secondary-bg-color,#1a2030);--text:var(--tg-theme-text-color,#f4f6fb);--muted:var(--tg-theme-hint-color,#9ba6bb);--accent:var(--tg-theme-button-color,#6d7cff);--line:rgba(150,165,195,.18)}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif}
+    .wrap{max-width:760px;margin:auto;padding:16px 14px 34px}
+    header{display:flex;align-items:center;justify-content:space-between;margin:4px 0 16px}
+    h1{font-size:22px;margin:0;font-weight:800;letter-spacing:-.5px}.sub{color:var(--muted);font-size:12px;margin-top:3px}
+    .pill{font-size:11px;color:#ffd98a;background:#7b541d33;border:1px solid #a879354f;border-radius:20px;padding:6px 9px}
+    .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+    .tab{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:10px 3px;border-radius:12px;font-size:11px;font-weight:700}
+    .tab.active{background:var(--accent);border-color:var(--accent);color:white}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+    .notice{font-size:12px;line-height:1.45;color:var(--muted)}
+    .notice strong{color:var(--text)}
+    .field{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;outline:none}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+    .label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
+    .selects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+    button{cursor:pointer}
+    .primary{background:var(--accent);color:white;border:0;border-radius:11px;padding:12px 14px;font-weight:700;width:100%;margin-top:10px}
+    .list{display:grid;gap:10px}
+    .item{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px}
+    .itemtop{display:flex;justify-content:space-between;gap:10px}
+    .name{font-weight:750;font-size:15px}.source{color:var(--muted);font-size:11px;margin-top:3px}
+    .price{font-weight:800;white-space:nowrap}
+    .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .tag{font-size:11px;padding:5px 8px;border-radius:20px;background:rgba(120,140,180,.13);color:var(--muted)}
+    .actions{display:flex;gap:8px;margin-top:11px}
+    .small{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:10px;padding:9px 11px;font-size:12px}
+    .small:disabled{opacity:.45;cursor:not-allowed}
+    .heart{margin-left:auto;font-size:18px}
+    .empty{text-align:center;padding:28px 12px;color:var(--muted);line-height:1.5}
+    .section-title{font-weight:800;margin:2px 0 12px}
+    .sourcegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .sourcebox{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;background:var(--bg)}
+    .sourcebox b{display:block;margin-bottom:3px}.status{font-size:11px;color:var(--muted)}
+    .hidden{display:none!important}
+    footer{text-align:center;color:var(--muted);font-size:11px;margin-top:18px}
+    @media(min-width:600px){.tabs{gap:9px}.tab{font-size:13px;padding:12px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>🎁 NFT Gift Scanner</h1><div class="sub">Поиск и отслеживание подарков</div></div>
+    <div class="pill">MVP · DEMO</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="catalog">Каталог</button>
+    <button class="tab" data-tab="search">Поиск</button>
+    <button class="tab" data-tab="price">Цена</button>
+    <button class="tab" data-tab="favorites">Избранное</button>
+    <button class="tab" data-tab="sources">Источники</button>
+  </nav>
+
+  <section id="catalog" class="view">
+    <div class="panel">
+      <div class="notice"><strong>Важно:</strong> сейчас это рабочий макет Mini App. Карточки ниже демонстрационные, не реальные объявления. Живые цены и продавцы появятся после подключения API/источников.</div>
+    </div>
+    <div class="list" id="catalogList"></div>
+  </section>
+
+  <section id="search" class="view hidden">
+    <div class="panel">
+      <div class="section-title">🔎 Поиск по модели</div>
+      <label class="label" for="searchInput">Название подарка или модели</label>
+      <input id="searchInput" class="field" placeholder="Например: Plush Pepe">
+      <button class="primary" id="searchBtn">Найти</button>
+    </div>
+    <div class="list" id="searchList"></div>
+  </section>
+
+  <section id="price" class="view hidden">
+    <div class="panel">
+      <div class="section-title">💰 Фильтр цены</div>
+      <div class="row">
+        <div><label class="label" for="minPrice">Цена от, TON</label><input id="minPrice" class="field" type="number" min="0" step="0.01" placeholder="0"></div>
+        <div><label class="label" for="maxPrice">Цена до, TON</label><input id="maxPrice" class="field" type="number" min="0" step="0.01" placeholder="Без лимита"></div>
+      </div>
+      <div class="selects">
+        <div><label class="label" for="priceSource">Площадка</label><select id="priceSource" class="field"><option value="all">Все</option><option>Telegram</option><option>Fragment</option><option>Portals</option><option>MRKT</option><option>Tonnel</option><option>Getgems</option></select></div>
+        <div><label class="label" for="sort">Сортировка</label><select id="sort" class="field"><option value="asc">Сначала дешевле</option><option value="desc">Сначала дороже</option></select></div>
+      </div>
+      <button class="primary" id="filterBtn">Применить фильтр</button>
+    </div>
+    <div class="list" id="priceList"></div>
+  </section>
+
+  <section id="favorites" class="view hidden">
+    <div class="panel"><div class="section-title">⭐ Избранное</div><div class="notice">Нажимай ☆ на карточке, чтобы сохранить её на этом устройстве.</div></div>
+    <div class="list" id="favoritesList"></div>
+  </section>
+
+  <section id="sources" class="view hidden">
+    <div class="panel">
+      <div class="section-title">🌐 Источники данных</div>
+      <div class="notice">Эти площадки предусмотрены для подключения. Статус «не подключено» означает, что приложение пока не получает оттуда живые объявления.</div>
+    </div>
+    <div class="sourcegrid" id="sourceGrid"></div>
+  </section>
+  <footer>Демо-интерфейс · Не является торговой площадкой</footer>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const demo = [
+ {id:"d1",name:"Пример: Plush Pepe",model:"Plush Pepe",price:12.5,source:"Telegram",kind:"ДЕМО"},
+ {id:"d2",name:"Пример: Heart Locket",model:"Heart Locket",price:18,source:"Fragment",kind:"ДЕМО"},
+ {id:"d3",name:"Пример: Signet Ring",model:"Signet Ring",price:7.8,source:"Portals",kind:"ДЕМО"},
+ {id:"d4",name:"Пример: Sakura Flower",model:"Sakura Flower",price:24,source:"MRKT",kind:"ДЕМО"},
+ {id:"d5",name:"Пример: Vintage Cigar",model:"Vintage Cigar",price:9.4,source:"Tonnel",kind:"ДЕМО"},
+ {id:"d6",name:"Пример: Magic Potion",model:"Magic Potion",price:15.2,source:"Getgems",kind:"ДЕМО"}
+];
+const sources=["Telegram","Fragment","Portals","MRKT","Tonnel","Getgems"];
+const favorites = new Set(JSON.parse(localStorage.getItem("nft_favs")||"[]"));
+const $ = id => document.getElementById(id);
+function saveFavs(){localStorage.setItem("nft_favs",JSON.stringify([...favorites]));}
+function card(x){
+ const fav=favorites.has(x.id);
+ return `<article class="item"><div class="itemtop"><div><div class="name">${x.name}</div><div class="source">${x.source} · ${x.kind}</div></div><div class="price">${x.price.toFixed(2)} TON</div></div><div class="meta"><span class="tag">Демонстрационное объявление</span><span class="tag">${x.model}</span></div><div class="actions"><button class="small" disabled>Ссылка продавца появится после подключения данных</button><button class="small heart" data-fav="${x.id}" aria-label="Избранное">${fav?"★":"☆"}</button></div></article>`;
+}
+function render(target,items,emptyText="Ничего не найдено"){
+ $(target).innerHTML=items.length?items.map(card).join(""):`<div class="panel empty">${emptyText}</div>`;
+}
+function bindFavs(){
+ document.querySelectorAll("[data-fav]").forEach(b=>b.addEventListener("click",()=>{
+  const id=b.dataset.fav; favorites.has(id)?favorites.delete(id):favorites.add(id); saveFavs(); refresh();
+ }));
+}
+function refresh(){
+ render("catalogList",demo);
+ render("searchList",demo);
+ render("priceList",demo);
+ render("favoritesList",demo.filter(x=>favorites.has(x.id)),"Пока здесь пусто. Добавь подарки в избранное через ☆.");
+ bindFavs();
+}
+function tab(name){
+ document.querySelectorAll(".view").forEach(v=>v.classList.toggle("hidden",v.id!==name));
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));
+ if(name==="favorites") render("favoritesList",demo.filter(x=>favorites.has(x.id)),"Пока здесь пусто. Добавь подарки в избранное через ☆.");
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
+$("searchBtn").addEventListener("click",()=>{
+ const q=$("searchInput").value.trim().toLowerCase();
+ render("searchList",demo.filter(x=>x.model.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)),"По этому запросу ничего нет.");
+ bindFavs();
+});
+$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("searchBtn").click();});
+$("filterBtn").addEventListener("click",()=>{
+ const min=$("minPrice").value===""?0:Number($("minPrice").value);
+ const max=$("maxPrice").value===""?Infinity:Number($("maxPrice").value);
+ const src=$("priceSource").value, sort=$("sort").value;
+ let items=demo.filter(x=>x.price>=min&&x.price<=max&&(src==="all"||x.source===src));
+ items.sort((a,b)=>sort==="asc"?a.price-b.price:b.price-a.price);
+ render("priceList",items,"Нет демонстрационных карточек в этом диапазоне.");
+ bindFavs();
+});
+$("sourceGrid").innerHTML=sources.map(s=>`<div class="sourcebox"><b>${s}</b><span class="status">Не подключено · ожидает интеграции</span></div>`).join("");
+refresh();
+</script>
+</body>
+</html>

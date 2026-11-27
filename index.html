@@ -88,7 +88,36 @@ function card(g){
 function bind(){document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openGift(b.dataset.open));document.querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let s=b.dataset.fav;fav.has(s)?fav.delete(s):fav.add(s);localStorage.setItem('nft_live_favs',JSON.stringify([...fav]));refresh()})}
 function render(id,arr,empty){$(id).innerHTML=arr.length?arr.map(card).join(''):`<div class="empty">${empty}</div>`;bind()}
 function refresh(){render('catalogList',gifts,'Каталог пока пуст');render('favList',gifts.filter(g=>fav.has(String(g.slug||g.id||g.name))),'Пока ничего не добавлено')}
-async function load(){try{let r=await fetch(API,{headers:{'Accept':'application/json'}});if(!r.ok)throw Error('API ответил '+r.status);let j=await r.json();gifts=Array.isArray(j)?j:(j.gifts||j.results||j.collections||j.data?.gifts||j.data||[]);if(!Array.isArray(gifts))throw Error('Неожиданный формат каталога');gifts.sort((a,b)=>(a.floor?.price??Infinity)-(b.floor?.price??Infinity));$('updated').textContent=' · обновлено '+new Date().toLocaleTimeString('ru-RU');refresh();applyFilter()}catch(e){$('catalogList').innerHTML=`<div class="empty">Не удалось загрузить каталог: ${esc(e.message)}. Попробуй обновить страницу позже.</div>`}}
+async function load(){
+ try{
+  let r=await fetch(API,{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw Error('API ответил '+r.status);
+  let j=await r.json();
+  gifts=Array.isArray(j)?j:(j.gifts||j.results||j.collections||j.data?.gifts||j.data||[]);
+  if(!Array.isArray(gifts))throw Error('Неожиданный формат списка коллекций');
+  gifts.sort((a,b)=>(a.floor?.rub??a.floor?.price??Infinity)-(b.floor?.rub??b.floor?.price??Infinity));
+  refresh();applyFilter();
+  // Index response is a summary. Fetch each collection detail for its real image URL.
+  for(let i=0;i<gifts.length;i+=5){
+   const batch=gifts.slice(i,i+5);
+   const enriched=await Promise.all(batch.map(async g=>{
+    const slug=g.slug||g.id;
+    if(!slug)return g;
+    try{
+     const rr=await fetch(API+'/'+encodeURIComponent(slug)+'?models=0',{headers:{'Accept':'application/json'}});
+     if(!rr.ok)return g;
+     const detail=await rr.json();
+     return {...g,...(detail.gift||detail.collection||detail)};
+    }catch(_){return g}
+   }));
+   enriched.forEach((g,k)=>{gifts[i+k]=g});
+   refresh();applyFilter();
+  }
+  $('updated').textContent=' · обновлено '+new Date().toLocaleTimeString('ru-RU');
+ }catch(e){
+  $('catalogList').innerHTML=`<div class="empty">Не удалось загрузить каталог: ${esc(e.message)}. Попробуй обновить страницу позже.</div>`;
+ }
+}
 async function openGift(slug){currentTab='catalog';$('detail').classList.remove('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));$('detailContent').innerHTML='<div class="empty">Загружаю модели…</div>';try{let r=await fetch(API+'/'+encodeURIComponent(slug));if(!r.ok)throw Error('Ошибка '+r.status);let j=await r.json(),g=j.gift||j.collection||j,models=j.models||g.models||j.data?.models||[];let collectionLinks=(g.offers||[]).filter(o=>o.url).map(o=>`<a class="small" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(({fragment:'Fragment',portals:'Portals',telegram:'Telegram'}[o.market]||o.market||'Открыть'))} · ${fmt(o.price)} ${esc(o.currency||'')}</a>`).join('');$('detailContent').innerHTML=`<div class="panel"><div class="gift">${imageHtml(g,slug)}<div><div class="name">${esc(g.name||slug)}</div><div class="price">${floorText(g)}</div></div></div><div class="actions">${collectionLinks||'<span class="muted">Ссылки на предложения появятся, если площадка передала их для коллекции</span>'}</div></div><div class="panel"><div class="title">Модели (${models.length})</div><input id="modelQ" class="field" placeholder="Фильтр моделей"><div id="modelsList" class="list" style="margin-top:10px"></div></div>`;function drawModels(q=''){let arr=models.filter(m=>(m.name||'').toLowerCase().includes(q.toLowerCase()));$('modelsList').innerHTML=arr.length?arr.map(m=>{let links=(m.offers||[]).filter(o=>o.url).map(o=>`<a class="small" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(({fragment:'Fragment',portals:'Portals',telegram:'Telegram'}[o.market]||o.market||'Открыть'))} · ${fmt(o.price)} ${esc(o.currency||'')}</a>`).join('');return `<article class="item"><div class="gift">${imageHtml(m,slug)}<div><b>${esc(m.name||'Модель')}</b><div class="muted">${m.rarity_pct!=null?'Редкость '+m.rarity_pct+'%':''}</div><div class="price">${floorText(m)}</div></div></div><div class="actions">${links||'<span class="muted">Нет активных предложений со ссылкой</span>'}</div></article>`}).join(''):'<div class="empty">Модели не найдены</div>'}$('modelQ').oninput=e=>drawModels(e.target.value);drawModels()}catch(e){$('detailContent').innerHTML=`<div class="empty">Не получилось открыть коллекцию: ${esc(e.message)}</div>`}}
 function applyFilter(){let min=Number($('min').value||0),max=$('max').value===''?Infinity:Number($('max').value);let a=gifts.filter(g=>g.floor&&g.floor.currency==='GRAM'&&g.floor.price>=min&&g.floor.price<=max);render('priceList',a,'Нет коллекций в этом диапазоне.')}
 function tab(name){currentTab=name;$('detail').classList.add('hidden');document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='favorites')render('favList',gifts.filter(g=>fav.has(String(g.slug||g.id||g.name))),'Пока ничего не добавлено')}
